@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rocketchat/manager/provider.dart';
 import 'package:rocketchat/pages/login_page.dart';
-import 'package:rocketchat/pages/register_page.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: MyApp(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MessageProvider(),
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: MyApp(),
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
