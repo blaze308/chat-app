@@ -12,6 +12,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   TextEditingController textcontroller = TextEditingController();
+  TextEditingController usernamecontroller = TextEditingController();
   var messages = [];
 
   @override
@@ -40,6 +41,18 @@ class _ChatPageState extends State<ChatPage> {
               child: Container(
                 color: Colors.grey.shade300,
                 child: TextFormField(
+                  controller: usernamecontroller,
+                  decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.all(12),
+                      hintText: "Type username here...."),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                color: Colors.grey.shade300,
+                child: TextFormField(
                   controller: textcontroller,
                   decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(12),
@@ -49,7 +62,9 @@ class _ChatPageState extends State<ChatPage> {
             ),
             ElevatedButton(
                 onPressed: () async {
-                  Connect().postMessage(text: textcontroller.text);
+                  Connect().postMessage(
+                      username: usernamecontroller.text,
+                      text: textcontroller.text);
                 },
                 child: const Text("send message")),
             ElevatedButton(
