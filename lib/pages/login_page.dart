@@ -17,8 +17,8 @@ Connect connect = Connect();
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
-    login() {
-      connect.loginUser(
+    login() async {
+      await connect.loginUser(
         user: _usercontroller.text,
         password: _passwordcontroller.text,
         context: context,
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(10))),
               ),
               ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (formKey.currentState!.validate()) {
                       login();
                     }

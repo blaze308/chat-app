@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rocketchat/connections/connect.dart';
@@ -13,29 +15,29 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   TextEditingController textcontroller = TextEditingController();
   TextEditingController usernamecontroller = TextEditingController();
-  var messages = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Chat Page")),
       body: Container(
+        color: Colors.grey.shade200,
         child: Column(
           children: [
-            StreamBuilder(
-              stream: context.read<MessageProvider>().addMessagetoArray(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                return Container(
-                  child: Text(snapshot.data.toString()),
-                  // child: ListView.builder(
-                  //   itemCount: snapshot,
-                  //   itemBuilder: (context, index) {
-                  //     return Text(snapshot.data.toString());
-                  //   },
-                  // ),
-                );
-              },
-            ),
+            // StreamBuilder(
+            //   stream: context.read<MessageProvider>().addMessagetoArray(),
+            //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+            //     return Container(
+            //       child: Text(snapshot.data.toString()),
+            //       // child: ListView.builder(
+            //       //   itemCount: snapshot,
+            //       //   itemBuilder: (context, index) {
+            //       //     return Text(snapshot.data.toString());
+            //       //   },
+            //       // ),
+            //     );
+            //   },
+            // ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Container(
@@ -62,20 +64,28 @@ class _ChatPageState extends State<ChatPage> {
             ),
             ElevatedButton(
                 onPressed: () async {
-                  Connect().postMessage(
+                  await Connect().postMessage(
                       username: usernamecontroller.text,
                       text: textcontroller.text);
+
+                  await context.read<MessageProvider>().getSentMessagesList();
                 },
                 child: const Text("send message")),
+            // ElevatedButton(
+            //     onPressed: () async {
+            //       await Connect().getChannelHistory();
+            //     },
+            //     child: const Text("get history")),
+            // ElevatedButton(
+            //     onPressed: () async {
+            //       await Connect().getMessage();
+            //     },
+            //     child: const Text("get message")),
             ElevatedButton(
                 onPressed: () async {
-                  // var message = await Connect().getsMessage();
-                  // messages.add(message);
-                  // print(messages);
-
-                  await context.read<MessageProvider>().addMessagetoArray();
+                  await Connect().syncMessages();
                 },
-                child: const Text("get message")),
+                child: const Text("sync messages")),
           ],
         ),
       ),
