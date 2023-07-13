@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import "dart:convert";
-import "dart:developer";
 import "package:flutter/material.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:http/http.dart" as http;
@@ -103,17 +102,20 @@ class Connect {
           var msgId = await message["_id"];
           var roomId = await message["rid"];
           var sentMsg = await message["msg"];
+          var timestamp = await message["_updatedAt"];
 
-          print("post message response: ${response.body}");
+          // print("post message response: ${response.body}");
           // print("message: $message");
-          print("msgId: $msgId");
-          print("roomId: $roomId");
-          print("sentMsg: $sentMsg");
+          // print("msgId: $msgId");
+          // print("roomId: $roomId");
+          // print("sentMsg: $sentMsg");
+          // print("timestamp: $timestamp");
 
           //store response
           await storage.write(key: "msgId", value: jsonEncode(msgId));
           await storage.write(key: "roomId", value: jsonEncode(roomId));
           await storage.write(key: "sentMsg", value: jsonEncode(sentMsg));
+          await storage.write(key: "timestamp", value: jsonEncode(timestamp));
 
           return sentMsg.toString();
         }
@@ -123,25 +125,27 @@ class Connect {
     }
   }
 
-  syncMessages() async {
+  syncMessages({required BuildContext context}) async {
+    String time = "2019-04-16T18:30:46.669Z";
+    String newTime =
+        DateTime.now().subtract(const Duration(seconds: 60)).toIso8601String();
+    time = newTime;
+
     try {
       String? roomIdString = await storage.read(key: "roomId");
       String? authTokenString = await storage.read(key: "authToken");
       String? userIdString = await storage.read(key: "userId");
-      String? usernameString = await storage.read(key: "username");
 
       if (roomIdString != null &&
           authTokenString != null &&
-          userIdString != null &&
-          usernameString != null) {
+          userIdString != null) {
         var roomId = await jsonDecode(roomIdString);
         var authToken = await jsonDecode(authTokenString);
         var userId = await jsonDecode(userIdString);
-        var username = await jsonDecode(usernameString);
 
         http.Response response = await http.get(
           Uri.parse(
-              "http://10.0.2.2:3000/api/v1/chat.syncMessages?roomId=$roomId&lastUpdate=2019-04-16T18:30:46.669Z"),
+              "http://10.0.2.2:3000/api/v1/chat.syncMessages?roomId=$roomId&lastUpdate=$time"),
           headers: <String, String>{
             "X-Auth-Token": authToken,
             "X-User-Id": userId,
@@ -150,72 +154,24 @@ class Connect {
         );
 
         //get jsondata
-        var data = jsonDecode(response.body)["result"]["updated"];
+        var data = await jsonDecode(response.body)["result"]["updated"];
 
         //mapping
         var mMap = List<Map<String, dynamic>>.from(data)
             .map((x) => Map<String, dynamic>.from(x));
-        // print(mList);
-        // for (var item in mList) {
-        //   print("item: $item");
-        //   return item;
-        // }
-        // var one = item[8]["msg"];
-        // print(one);
 
-        //convert to List
         var mList = mMap.toList();
-        // print(itemList.length);
 
-        for (int i = 0; i < mList.length;) {
-          var mapUsername = mList[i]["u"]["username"];
-          var mapMsg = mList[i]["msg"];
-          // print(mList[i]["msg"]);
-          // print(username);
-          // print(mapId);
+        //securing data
+        await storage.write(key: "mList", value: jsonEncode(mList));
+        String? storedListString = await storage.read(key: "mList");
+        var storedList = await jsonDecode(storedListString!);
 
-          if (mapUsername == username) {
-            print("$mapUsername: $mapMsg");
-            var senderMsg = mapMsg;
-            return senderMsg.toString();
-          } else {
-            print("other: $mapMsg");
-            var receiverMsg = mapMsg;
-            return receiverMsg.toString();
-          }
-        }
+        print("stored: $storedList");
+        return storedList;
       }
     } catch (e) {
       print("Sync messages Error: ${e.toString()}");
     }
   }
 }
-
-  // getMessage() async {
-  //   try {
-  //     String? authTokenString = await storage.read(key: "authToken");
-  //     String? userIdString = await storage.read(key: "userId");
-  //     String? msgIdString = await storage.read(key: "msgId");
-
-  //     if (authTokenString != null &&
-  //         msgIdString != null &&
-  //         userIdString != null) {
-  //       var userId = jsonDecode(userIdString);
-  //       var authToken = jsonDecode(authTokenString);
-  //       var msgId = jsonDecode(msgIdString);
-
-  //       http.Response response = await http.get(
-  //         Uri.parse("http://10.0.2.2:3000/api/v1/chat.getMessage?msgId=$msgId"),
-  //         headers: <String, String>{
-  //           "X-Auth-Token": authToken,
-  //           "X-User-Id": userId,
-  //           "Content-type": "application/json",
-  //         },
-  //       );
-  //       var text = jsonDecode(response.body)["message"]["msg"];
-  //       return text.toString();
-  //     }
-  //   } catch (e) {
-  //     print("Message Receipt Error: ${e.toString()}");
-  //   }
-  // }

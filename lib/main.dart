@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rocketchat/manager/provider.dart';
+import 'package:rocketchat/manager/message_provider.dart';
 import 'package:rocketchat/pages/login_page.dart';
 
 void main() {
@@ -25,9 +25,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("RocketChat")),
-      body: const LoginPage(),
-    );
+    return const LoginPage();
   }
 }
